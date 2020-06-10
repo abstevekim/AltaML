@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Turtle Navigaton</title>
+    <style>
+        table, td {
+            font-size: 8px; font-family:verdana
+        }
+        #navtable {
+            border: 0.5px solid black; border-collapse: collapse; font-size: 8px; font-family:verdana
+        }
+    </style>
+  </head>
+  <body>
+    <p>This is an example code for the <strong>AltaML</strong> interview code <strong> by Steve </strong>. <font color='blue'>Please select file </font></p>
+
+    <input type="file" id="selectFile">
+    <hr>
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td style="font-size:16px">
+                            Select File Contents
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea style="width:420px; height:150px; resize:none" id="outputFile"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px">
+                            <p id='resultText1'><font color='blue'>Result display here .....</font></p>
+                            <p id='resultText2'>....</p>
+                            <p id='resultText3'>...</p>
+                            <p id='resultText4'>..</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:16px">
+                            Navigation Route of Turtle
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea style="width:420px; height:460px; resize:none" id="resultRoute"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td style="font-size:16px">
+                            Navigation Map
+                        </td>
+                    </tr>
+                    <tr>
+                        <td >
+                            <table style="width:780px; height:770px; border: 0.5px solid black;" id="navTable">
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+
+    <script>
+        let input = document.getElementById("selectFile");
+        let outputFile = document.getElementById("outputFile");
+
+        // F:forward, B:backward, L:left, R:right //
+        let f_direction = 'F';                              
+        let f_loc_x = 0; f_loc_y = 0;
+        let y_max = 0; y_min = 0; x_max = 0; x_min = 0;
+        let routeArray = Array(1000).fill(null).map(()=> Array());
+        let routeArrayInt = 0;
+
+        input.addEventListener("change", function () {
+
+            // Initail value setting 
+            routeArrayInt = 0; f_loc_x = 0; f_loc_y = 0; y_max = 0; y_min = 0; x_max = 0; x_min = 0;
+            f_direction = 'F'; 
+            
+            if (this.files && this.files[0]) {
+                let selectFile = this.files[0];
+                let reader = new FileReader();
+            
+                reader.addEventListener('load', function (e) {
+                    outputFile.textContent = e.target.result;
+                });
+                reader.readAsBinaryString(selectFile);
+
+                reader.onload = function() {
+                    let contents = this.result;
+
+                    let count = contents.match(/F/g).length;
+                    routeArray = Array(count+1).fill(null).map(()=> Array());
+                    routeArray[routeArrayInt][0] = f_loc_x;
+                    routeArray[routeArrayInt][1] = f_loc_y;
+
+                    // find the navigation setting value 
+                    for (let j = 0; j < contents.length; j++) {
+                        if (contents.substr(j, 1) === 'L') {
+                            leftChar();
+                        } else if (contents.substr(j, 1) === 'R') {
+                            rightChar();
+                        } else {
+                            forwardChar();
+                            if (f_loc_x > 0 && f_loc_x > x_max) {
+                                x_max = f_loc_x;
+                            }
+                            if (f_loc_x < 0 && f_loc_x < x_min) {
+                                x_min = f_loc_x;
+                            }
+                            if (f_loc_y > 0 && f_loc_y > y_max) {
+                                y_max = f_loc_y;
+                            }
+                            if (f_loc_y < 0 && f_loc_y < y_min) {
+                                y_min = f_loc_y;
+                            }
+                        }
+                    }
+                    // If developer want to debuging result, use this code for console.log
+                    // console.log("Max x " + x_max + ", " + "Min x " + x_min + ", " + "Max y " + y_max + ", " + "Min y " + y_min);
+                    // console.log("last loc " + f_loc_x + ", " + f_loc_y);
+                    resultRoute.textContent = routeArray.join(' --> ');
+
+                    let table = document.getElementById("navTable");
+                    table.innerHTML = '';
+                    for (let r = y_min; r < y_max+1; r++) {
+                        let row = table.insertRow(0);
+                        for (let c=x_max; c > x_min-1; c--) {
+                            let cell= row.insertCell(0);
+                            cell.innerHTML = '';
+
+                            // check the more than once  
+                            let double_chk = 0;
+                            routeArray.forEach(function(e) {
+                                    if (c === e[0] && r === e[1]) {
+                                        double_chk += 1;
+                                        cell.style.backgroundColor="#aacfcf"
+                                        if (double_chk > 1) {
+                                            double_chk < 4 ? cell.style.backgroundColor="#fbc687" : cell.style.backgroundColor="#f0a500"; 
+
+                                        }
+                                        // If user want to see counter then use it
+                                        // cell.innerHTML =   double_chk;                                         
+                                    }
+
+                                }
+                            );
+                            // start point check
+                            if (c === 0 && r === 0) {
+                                cell.style.backgroundColor="blue";
+                            }
+                            // end point check 
+                            if (c === f_loc_x && r === f_loc_y) {
+                                cell.style.backgroundColor="red";
+                            } 
+
+                        }
+
+                    }
+
+                    // Result display on the screen 
+                    let resultObj1 = document.getElementById("resultText1");
+                    resultObj1.innerHTML = " The start point is a " + "<font color='blue'>blue cell {0, 0}</font>" + ", end point is a " + "<font color='red'>red cell. {" + f_loc_x + "," + f_loc_y + "}</font>";
+                    let resultObj2 = document.getElementById("resultText2");
+                    resultObj2.innerHTML = "The <font color='#cf7500'>yellow cells</font>" + " are the points the turtle travelled more than once.";
+                    let resultObj3 = document.getElementById("resultText3");
+                    resultObj3.innerHTML = "(<font color='#679b9b'>green cells</font>:" + " visit one time, " + "<font color='#f0a500'>yellow cells(1)</font>: visit two or three times,";
+                    let resultObj4 = document.getElementById("resultText4");
+                    resultObj4.innerHTML = "<font color='#cf7500'>yellow cells(2)</font>: visit four times more)";
+
+                }
+
+            }
+        });
+
+        const leftChar = () => {
+            switch (f_direction) {
+                case 'F':
+                    f_direction = "L";
+                    break;
+                case 'B':
+                    f_direction = "R";
+                    break;
+                case 'L':
+                    f_direction = "B";
+                    break;
+                case 'R':
+                    f_direction = "F";
+            }
+        }
+
+        const rightChar = () => {
+            switch (f_direction) {
+                case 'F':
+                    f_direction = "R";
+                    break;
+                case 'B':
+                    f_direction = "L";
+                    break;
+                case 'L':
+                    f_direction = "F";
+                    break;
+                case 'R':
+                    f_direction = "B";
+
+            }
+        }
+
+        const forwardChar = () =>  {
+            switch (f_direction) {
+                case 'F':
+                    f_loc_y += 1;
+                    break;
+                case 'B':
+                    f_loc_y -= 1;
+                    break;
+                case 'L':
+                    f_loc_x -= 1;
+                    break;
+                case 'R':
+                    f_loc_x += 1;
+            }
+            routeArrayInt += 1;
+            routeArray[routeArrayInt][0] = f_loc_x;
+            routeArray[routeArrayInt][1] = f_loc_y;
+        }
+
+    </script>
+
+  </body>
+</html>
