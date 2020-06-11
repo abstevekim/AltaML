@@ -15,8 +15,8 @@
             - Turtle's starting and ending positions
 
             - Turtle's full route information and map
-            
-            - Informationabout duplication position
+
+            - Information about duplication position
 
 
 3. The user can get more information by reading the AltaML-Document-Steve document.
