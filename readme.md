@@ -6,7 +6,7 @@
 
     step 1. Run AltaML-Steve.html on the browser.
 
-    step 2. Click the "Choose File" button.
+    step 2. Click the "Choose File" button. (using data inside data folder)
 
     step 3. Select the test file.
 
